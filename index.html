@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ToDoList</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <style>
+      body {
+        font-family: cursive;
+        text-transform: capitalize;
+      }
+      .container {
+        margin: 20px auto;
+        width: 600px;
+      }
+      /* small */
+      .form {
+        padding: 20px;
+        background-color: #ddd;
+        border-radius: 10px;
+        display: flex;
+        justify-content: space-between;
+      }
+      .form input[type="text"] {
+        width: 65%;
+        padding: 10px;
+        border-radius: 6px;
+        border: none;
+      }
+      .form input[type="text"]:focus {
+        outline: none;
+      }
+      .form input[type="submit"] {
+        background-color: #ff5230;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 13px;
+        cursor: pointer;
+      }
+      .tasks {
+        min-height: 0px;
+        padding: 20px;
+        background-color: #ddd;
+        margin-top: 20px;
+        border-radius: 10px;
+      }
+      .task {
+        cursor: pointer;
+        background-color: #fff;
+        padding: 10px;
+        border-radius: 8px;
+        display: flex;
+        justify-content: space-between;
+        font-size: 21px;
+        align-items: center;
+      }
+      .task:not(:last-of-type) {
+        margin-bottom: 15px;
+      }
+      .task.done {
+        opacity: 0.6;
+      }
+      .delete {
+        font-size: 10px;
+        background-color: #ff1a00;
+        color: #fff;
+        padding: 5px;
+        border-radius: 8px;
+        cursor: pointer;
+        margin-left: 15px;
+      }
+    </style>
+    <div class="container">
+      <div class="form">
+        <input type="text" />
+        <input type="submit" value="Add Task" />
+        <input type="submit" class="empty" value="Delete All" />
+      </div>
+      <div class="tasks"></div>
+    </div>
+    <script>
+      const text = document.querySelector("input[type='text']");
+      const submit = document.querySelector("input[type='submit']");
+      const tasks = document.querySelector(".tasks");
+
+      ////
+
+      let arrayOfTasxs = [];
+
+      //chack if there is tasks in local storage
+      if (localStorage.getItem("tasks")) {
+        arrayOfTasxs = JSON.parse(localStorage.getItem("tasks"));
+      }
+
+      //delete all
+      let deleteAll = document.querySelector(".empty");
+
+      deleteAll.onclick = () => {
+        tasks.innerHTML = "";
+        arrayOfTasxs = [];
+        addDataToLocalStorage(arrayOfTasxs);
+        window.localStorage.clear();
+      };
+
+      //تشغيل الفانكشيون
+      getDataFromLocalStorage();
+
+      submit.onclick = () => {
+        if (text.value !== "") {
+          //add tasxs
+          addTasxsToArray(text.value);
+          //empty
+          text.value = "";
+          //add tassk to page
+          addElementToPage(arrayOfTasxs);
+          //add tasks to local storage
+          addDataToLocalStorage(arrayOfTasxs);
+          //for tast
+          //      console.log(arrayOfTasxs);
+          //      console.log(JSON.stringify(arrayOfTasxs));
+        }
+      };
+
+      ////////
+      tasks.addEventListener("click", (e) => {
+        //delete button
+        if (e.target.className === "delete") {
+          //remove frome page
+          e.target.parentElement.remove();
+          //remove from local storage
+          deleteTaskWith(e.target.parentElement.getAttribute("data-id"));
+        }
+        if (e.target.classList.contains("task")) {
+          // Toggle Completed For The Task
+          toggleStatusTaskWith(e.target.getAttribute("data-id"));
+          // Toggle Done Class
+          e.target.classList.toggle("done");
+        }
+      });
+
+      function addTasxsToArray(x) {
+        const task = {
+          id: Date.now(),
+          title: x,
+          completed: false,
+        };
+        //push tasks to array
+        arrayOfTasxs.push(task);
+      }
+
+      function addElementToPage(x) {
+        //empty the tasks
+        tasks.innerHTML = "";
+        //looping on array
+        x.forEach((el) => {
+          //creat main div
+          let div = document.createElement("div");
+          div.className = "task";
+          //chack if task is done
+          if (el.completed) {
+            div.className = "task done";
+          }
+          div.setAttribute("data-id", el.id);
+          div.appendChild(document.createTextNode(el.title));
+          //creat delet span
+          let deleteSpan = document.createElement("span");
+          deleteSpan.className = "delete";
+          deleteSpan.innerHTML = "delete";
+          //append delete span
+          div.appendChild(deleteSpan);
+          //add tasks div to main container
+          tasks.appendChild(div);
+        });
+      }
+
+      function addDataToLocalStorage(x) {
+        window.localStorage.setItem("tasks", JSON.stringify(x));
+      }
+
+      function getDataFromLocalStorage() {
+        let data = window.localStorage.getItem("tasks");
+        if (data) {
+          let tasks = JSON.parse(data);
+          // console.log(tasks);
+          addElementToPage(tasks);
+        }
+      }
+
+      function deleteTaskWith(taskID) {
+        //للشرح
+        // for (i = 0; i < arrayOfTasxs.length; i++) {
+        //   console.log(`${arrayOfTasxs[i].id} === ${taskID}`);
+        // }
+        arrayOfTasxs = arrayOfTasxs.filter((task) => task.id != taskID);
+        addDataToLocalStorage(arrayOfTasxs);
+      }
+
+      function toggleStatusTaskWith(x) {
+        for (i = 0; i < arrayOfTasxs.length; i++) {
+          if (arrayOfTasxs[i].id == x) {
+            arrayOfTasxs[i].completed == false
+              ? (arrayOfTasxs[i].completed = true)
+              : (arrayOfTasxs[i].completed = false);
+            console.log(5);
+          }
+        }
+        addDataToLocalStorage(arrayOfTasxs);
+      }
+    </script>
+  </body>
+</html>
